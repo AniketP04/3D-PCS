@@ -124,7 +124,7 @@ if __name__ == "__main__":
     train_dataset = PointCloudDataset(path, start = 0, end = 90)
     valid_dataset = PointCloudDataset(path, start = 90, end = 120)
     datasets = {"train" : train_dataset, "validation" : valid_dataset}
-    dataloaders = {x : torch.utils.data.DataLoader(datasets[x], batch_size=32, shuffle=True) for x in ['train', 'validation']}
+    dataloaders = {x : torch.utils.data.DataLoader(datasets[x], batch_size=8, shuffle=True) for x in ['train', 'validation']}
 
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

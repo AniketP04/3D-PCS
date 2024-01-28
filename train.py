@@ -38,7 +38,7 @@ def train(model, optimizer, dataloaders, epochs, plot=False):
             running_loss = 0
             total, correct = 0,0
 
-            for step, data in enumerate(dataloaders[phase]):
+            for step, data in tqdm(enumerate(dataloaders[phase])):
                 if phase == 'train':
                     optimizer.zero_grad()
                     inputs, labels = data['pointcloud'].to(device).float(), data['category'].to(device)

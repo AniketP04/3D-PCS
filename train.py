@@ -7,9 +7,9 @@ import torch
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from modelnet10 import PointCloudDataset, default_transforms
+from datalaoder import PointCloudDataset
 from loss import pointnetloss
-from segmentation import PointNet
+from model import PointNet
 
 
 def train(model, optimizer, dataloaders, epochs, plot=False): 

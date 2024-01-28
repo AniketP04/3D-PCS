@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class Tnet(nn.Module):
     def __init__(self, k=3):
         super(Tnet, self).__init__()
@@ -77,15 +76,15 @@ class Transform(nn.Module):
             return torch.cat([localfeat, out], dim=1), m3x3, m64x64
 
 
-class PointNet(nn.Module):
-    def __init__(self, classes = 10):
-        super(PointNet, self).__init__()
-        self.classes = classes
+class PointNetSegmentation(nn.Module):
+    def __init__(self, num_classes=10):
+        super(PointNetSegmentation, self).__init__()
+        self.num_classes = num_classes
         self.transform = Transform(global_feature=False)
         self.conv1 = nn.Conv1d(1088, 512, 1)
         self.conv2 = nn.Conv1d(512, 256, 1)
         self.conv3 = nn.Conv1d(256, 128, 1)
-        self.conv4 = nn.Conv1d(128, classes, 1)
+        self.conv4 = nn.Conv1d(128, num_classes, 1)
 
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)

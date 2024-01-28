@@ -1,8 +1,8 @@
 # 3D Point Cloud Segmentation
 
-This endeavor involves applying the PointNet model to perform 3D Point Cloud Segmentation on the ModelNet10 dataset. 
-The dataset comprises files in the .OFF format. PointNetLoss was employed, resulting in an attained accuracy of 87% after training for 100 epochs. 
+In this project, the PointNet model is implemented for 3D Point Cloud Segmentation using the SemanticKITTI dataset in PyTorch. Out of the available 1000 samples, only 300 were utilized for this particular endeavor. The PointNetLoss function was applied during training, leading to an achieved accuracy of 83% after 100 epochs. The focus of the project was to showcase the model's performance on a subset of the dataset, providing valuable insights into its segmentation capabilities. The utilization of PyTorch facilitated efficient implementation and experimentation throughout the training process.
 
-![chair](https://github.com/AniketP04/3D-PCD-/assets/128228805/4bed0927-8947-4b37-8160-9e3d167255e5)
 
-To delve into RGBD images, please refer to the following link: https://github.com/AniketP04/Open3D.
+Dataset: [Link]( https://drive.google.com/drive/folders/1_xPLa_rMIT3ggSSnp1W5mB74mojlWqvH?usp=sharing)
+
+To delve into RGBD images, please refer to the following link: [Link]( https://github.com/AniketP04/Open3D).

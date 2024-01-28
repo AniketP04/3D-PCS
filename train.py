@@ -133,4 +133,4 @@ if __name__ == "__main__":
     pointnet = PointNet().to(device)
     optimizer = torch.optim.Adam(pointnet.parameters(), lr=0.001)
 
-    train(pointnet, optimizer, dataloaders, epochs=3, plot=False)
+    train(pointnet, optimizer, dataloaders, epochs=100, plot=False)

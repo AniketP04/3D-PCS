@@ -121,13 +121,14 @@ def train(model, optimizer, dataloaders, epochs, plot=False):
 
 if __name__ == "__main__":
     random.seed = 42
-    path = Path("../input/modelnet10-princeton-3d-object-dataset/ModelNet10")
+    path = Path("../input/Dataset")
 
-    train_dataset = PointCloudDataset(path, folder="train", transform=default_transforms(), data_augmentation=True)
-    valid_dataset = PointCloudDataset(path, folder="train", transform=default_transforms(), data_augmentation=False)
+    train_dataset = PointCloudDataset(path, start = 0, end = 90)
+    valid_dataset = PointCloudDataset(path, start = 90, end = 120)
     datasets = {"train" : train_dataset, "validation" : valid_dataset}
     dataloaders = {x : torch.utils.data.DataLoader(datasets[x], batch_size=32, shuffle=True) for x in ['train', 'validation']}
 
+    
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     pointnet = PointNet().to(device)

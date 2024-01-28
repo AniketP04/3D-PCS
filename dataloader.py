@@ -228,7 +228,7 @@ def default_transforms():
         ToTensor()
     ])
 
-class PointCloudData(Dataset):
+class PointCloudDataset(Dataset):
     def __init__(self, dataset_path, transform=default_transforms(), start=0, end=1000):
         self.dataset_path = dataset_path
         self.transforms = transform

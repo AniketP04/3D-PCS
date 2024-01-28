@@ -1,15 +1,13 @@
+import os
 import numpy as np 
 import time 
 import random 
-
 import torch 
-
 import matplotlib.pyplot as plt
 from pathlib import Path
-
 from datalaoder import PointCloudDataset
 from loss import pointnetloss
-from model import PointNet
+from model import PointNetSegmentation
 
 
 def train(model, optimizer, dataloaders, epochs, plot=False): 

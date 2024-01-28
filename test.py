@@ -86,10 +86,10 @@ def evaluate_miou(model, dataloader):
 
 if __name__ == "__main__":
     random.seed = 42
-    path = Path("../input/modelnet10-princeton-3d-object-dataset/ModelNet10")
+    path = Path("../input/Dataset")
 
-    test_dataset = PointCloudDataset(path, folder="test", transform=default_transforms(), data_augmentation=True)
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle=False)
+    test_dataset = PointCloudDataset(path, start = 120, end = 150)
+    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

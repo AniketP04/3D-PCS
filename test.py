@@ -1,101 +1,67 @@
 import numpy as np 
-import random
-import plotly.graph_objects as go
-
-import torch 
-
+import os
+import time
+from tqdm import tqdm
 from pathlib import Path
-
-from modelnet10 import PointCloudDataset, default_transforms
-from segmentation import PointNet
-
-
-def visualize_rotate(data):
-    x_eye, y_eye, z_eye = 1.25, 1.25, 0.8
-    frames=[]
-
-    def rotate_z(x, y, z, theta):
-        w = x+1j*y
-        return np.real(np.exp(1j*theta)*w), np.imag(np.exp(1j*theta)*w), z
-
-    for t in np.arange(0, 10.26, 0.1):
-        xe, ye, ze = rotate_z(x_eye, y_eye, z_eye, -t)
-        frames.append(dict(layout=dict(scene=dict(camera=dict(eye=dict(x=xe, y=ye, z=ze))))))
-    fig = go.Figure(data=data,
-                    layout=go.Layout(
-                        updatemenus=[dict(type='buttons',
-                                    showactive=False,
-                                    y=1,
-                                    x=0.8,
-                                    xanchor='left',
-                                    yanchor='bottom',
-                                    pad=dict(t=45, r=10),
-                                    buttons=[dict(label='Play',
-                                                    method='animate',
-                                                    args=[None, dict(frame=dict(duration=50, redraw=True),
-                                                                    transition=dict(duration=0),
-                                                                    fromcurrent=True,
-                                                                    mode='immediate'
-                                                                    )]
-                                                    )
-                                            ]
-                                    )
-                                ]
-                    ),
-                    frames=frames
-            )
-
-    return fig
+import torch 
+from dataloader import *
+from model import PointNetSegmentation
 
 
-def pcshow(xs,ys,zs):
-    data=[go.Scatter3d(x=xs, y=ys, z=zs,
-                                   mode='markers')]
-    fig = visualize_rotate(data)
-    fig.update_traces(marker=dict(size=2,
-                      line=dict(width=2,
-                      color='DarkSlateGrey')),
-                      selector=dict(mode='markers'))
-    fig.show()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 
+labels = dataloader.labels
 
-def evaluate_miou(model, dataloader):
-    iou_scores = []
+def compute_stats(true_labels, pred_labels):
+  unk     = np.count_nonzero(true_labels == 0)
+  trav    = np.count_nonzero(true_labels == 1)
+  nontrav = np.count_nonzero(true_labels == 2)
 
-    with torch.no_grad():
-        for i, data in enumerate(dataloader):
-            print('Batch [%4d / %4d]' % (i+1, len(dataloader)))
-                    
-            inputs, labels = data['pointcloud'].to(device).float(), data['category'].to(device)
-            outputs, _, _ = model(inputs.transpose(1,2))
-            n_points = outputs.size()[1]
-            _, preds = torch.max(outputs.transpose(1,2).data, 1)
+  total_predictions = labels.shape[1]*labels.shape[0]
+  correct = (true_labels == pred_labels).sum().item()
 
-            classes = np.unique(labels.cpu().numpy())
-            miou = []
-            for cls in classes:
-                I = np.sum(np.logical_and((labels == cls).view(-1,1).repeat(1,n_points).cpu().numpy(), (preds == cls).cpu().numpy()))
-                U = np.sum(np.logical_or((labels == cls).view(-1,1).repeat(1,n_points).cpu().numpy(), (preds == cls).cpu().numpy()))
-                iou = I/float(U)
-                miou.append(iou)
-            
-            iou_scores.append(np.mean(miou))
+  return correct, total_predictions
 
-    return iou_scores
-
-
-if __name__ == "__main__":
-    random.seed = 42
-    path = Path("../input/Dataset")
-
-    test_dataset = PointCloudDataset(path, start = 120, end = 150)
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    pointnet = PointNet().to(device)
-    pointnet.load_state_dict(torch.load('./models/model.pth'))
+if __name__ == '__main__':
+    pointnet = pt.PointNetSeg()
+    model_path = os.path.join('', "pointnetmodel.yml")
+    pointnet.load_state_dict(torch.load(model_path))
+    pointnet.to(device)
     pointnet.eval()
+    test_ds = dataloader.PointCloudData('dataset', start=120, end=150)
+    test_loader = dataloader.DataLoader(dataset=test_ds, batch_size=1, shuffle=False)
+    total_correct_predictions = total_predictions = 0
 
-    iou_scores = evaluate_miou(pointnet, test_dataloader)
-    print("mIoU : {}".format(np.mean(iou_scores)))
+    start = time.time()
+
+    for i, data in tqdm(enumerate(test_loader, 0)):
+        inputs, labels = data
+        inputs = inputs.to(device).float()
+        labels = labels.to(device)
+        outputs, __, __ = pointnet(inputs.transpose(1,2))
+        _, predicted = torch.max(outputs.data, 1)
+
+        remapped_pred = dataloader.remap_to_bgr(predicted[0].cpu().numpy(), dataloader.remap_color_scheme)
+        np_pointcloud = inputs[0].cpu().numpy()
+
+        ground_truth_labels = labels.cpu()
+        predicted_labels = predicted.cpu()
+        correct, total = compute_stats(ground_truth_labels, predicted_labels)
+
+        total_correct_predictions += correct
+        total_predictions += total
+
+    end = time.time()
+
+    print()
+    print()
+
+    test_acc = 100. * total_correct_predictions / total_predictions
+    tot_latency = end-start
+    avg_latency = tot_latency / len(test_loader.dataset)
+
+    print('Test accuracy:', test_acc, "%")
+    print('total time:', tot_latency, " [s]")
+    print('avg time  :', avg_latency, " [s]")
+

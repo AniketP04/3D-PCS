@@ -86,7 +86,7 @@ class PointNet(nn.Module):
         return [feature_transform_output, global_feature_repeated], matrix3x3, matrix64x64
 
 
-class PointNetSeg(nn.Module):
+class PointNetSegmentation(nn.Module):
     def __init__(self, classes=3):
         super().__init__()
         self.pointnet = PointNet()
